@@ -1,18 +1,19 @@
-const router   = require('express').Router();
-const C        = require('../controllers/usuario.controller');
-const FC       = require('../controllers/familia.controller');
-const validate = require('../middleware/validate.middleware');
 const auth     = require('../middleware/auth.guard');
-const { createUserSchema, updateUserSchema } = require('../../validators');
+const validate = require('../middleware/validate.middleware');
 
-router.get('/',                          C.searchUsers);
-router.get('/familias/by-doc/search',    FC.searchByDocument);
-router.put('/update-token',              C.updateToken);
-router.get('/cumpleanos',                C.getBirthdays);
-router.get('/:id',           auth,       C.get);
-router.post('/',             validate(createUserSchema), C.create);
-router.put('/:id',           validate(updateUserSchema), C.update);
-router.delete('/:id',                    C.remove);
-router.patch('/:id/email',               C.updateEmail);
+module.exports = (controller, familiaController) => {
+  const router = require('express').Router();
+  const { createUserSchema, updateUserSchema } = require('../../validators');
 
-module.exports = router;
+  router.get('/',                        controller.searchUsers);
+  router.get('/familias/by-doc/search',  familiaController.searchByDocument);
+  router.put('/update-token',            controller.updateToken);
+  router.get('/cumpleanos',              controller.getBirthdays);
+  router.get('/:id',           auth,     controller.get);
+  router.post('/',             validate(createUserSchema), controller.create);
+  router.put('/:id',           validate(updateUserSchema), controller.update);
+  router.delete('/:id',                  controller.remove);
+  router.patch('/:id/email',             controller.updateEmail);
+
+  return router;
+};

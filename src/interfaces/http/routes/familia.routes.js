@@ -1,22 +1,25 @@
-const router   = require('express').Router();
-const C        = require('../controllers/familia.controller');
-const validate = require('../middleware/validate.middleware');
-const auth     = require('../middleware/auth.guard');
-const allow    = require('../middleware/role.guard');
-const { createFamiliaSchema, updateFamiliaSchema } = require('../../validators');
+const auth  = require('../middleware/auth.guard');
+const allow = require('../middleware/role.guard');
 
-router.get('/search',                              C.searchByName);
-router.get('/available',                           C.listAvailable);
-router.get('/por-ident/:ident',                    C.byIdent);
-router.get('/reporte-completo', auth, allow('Admin'), C.reporteCompleto);
-router.get('/',                                    C.list);
-router.get('/:id',                                 C.get);
+module.exports = (controller) => {
+  const router = require('express').Router();
 
-router.post('/',   auth, allow('Admin'),           validate(createFamiliaSchema), C.create);
-router.put('/:id', auth, allow('Admin'),           validate(updateFamiliaSchema), C.update);
-router.delete('/:id', auth, allow('Admin'),        C.remove);
+  // Rutas sin auth (búsquedas públicas)
+  router.get('/search',                               controller.searchByName);
+  router.get('/available',                            controller.listAvailable);
+  router.get('/por-ident/:ident',                     controller.byIdent);
 
-router.patch('/:id/fotos',       auth, allow('Admin', 'PapaEDI', 'MamaEDI'), C.uploadFotos);
-router.patch('/:id/descripcion', auth, allow('Admin', 'PapaEDI', 'MamaEDI'), C.updateDescripcion);
+  // Rutas con auth
+  router.get('/reporte-completo', auth, allow('Admin'), controller.reporteCompleto);
+  router.get('/',                                     controller.list);
+  router.get('/:id',                                  controller.get);
 
-module.exports = router;
+  router.post('/',   auth, allow('Admin'),            controller.create);
+  router.put('/:id', auth, allow('Admin'),            controller.update);
+  router.delete('/:id', auth, allow('Admin'),         controller.remove);
+
+  router.patch('/:id/fotos',       auth, allow('Admin','PapaEDI','MamaEDI'), controller.uploadFotos);
+  router.patch('/:id/descripcion', auth, allow('Admin','PapaEDI','MamaEDI'), controller.updateDescripcion);
+
+  return router;
+};
